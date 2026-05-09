@@ -1,7 +1,5 @@
 # 基于人工智能算法的滑坡识别系统
 
-本科毕业设计题目：`基于人工智能算法的滑坡识别系统设计与实现`
-
 ## 技术栈
 - 后端：`Spring Boot 2.7`、`MyBatis-Plus`、`MySQL`、`Redis`、`Spring Security`、`JWT`
 - 前端：`Vue 3`、`Vite`、`Element Plus`、`Axios`、`Pinia`
@@ -92,7 +90,7 @@ npm run dev
 
 你也可以从登录页进入“注册”创建新的监测员账号。
 
-## 当前可演示功能
+## 主要功能
 - 登录/注册（JWT）
 - 识别任务（图片上传、结果可视化）
 - 灾情等级判定（I/II/III/IV）
@@ -114,16 +112,12 @@ npm run dev
 - 识别框过多/过少：调整后端 `ai.yolo.conf-threshold`
 - 预警列表加载失败：先检查 `http://localhost:8080/api/health` 是否可访问
 
-## 答辩演示建议
-请参考：`docs/demo-script.md`
-
-
 ## 智能助手（对话）
 
 - 登录后在侧边栏进入 **「智能助手」**；Java 后端把请求转发到 Python（配置项 **`chat.api.chat-url`**，默认 **`http://localhost:8000/chat`**）。
 - **端口说明**：同一台电脑上 **`fastapi-chat`**（离线占位）与 **`langchain-chat-api`**（真模型）不要同时占用 **8000**，用哪一个就只启动哪一个。
 
-### 真模型连续对话（推荐答辩演示）
+### 真模型连续对话（推荐）
 
 1. 在 [DeepSeek](https://platform.deepseek.com/) 等平台创建 **API Key**。
 2. **关掉** 占着 8000 端口的 `fastapi-chat` 进程（若之前启过）。
@@ -149,7 +143,7 @@ $env:DEEPSEEK_API_KEY = "sk-你的密钥"
 
 ### 离线占位（无 API Key 时）
 
-- 使用 **`fastapi-chat`**：规则/关键词回复，用于不联网或断 Key 时演示。启动后同样占用 8000，**与真模型二选一**。
+- 使用 **`fastapi-chat`**：规则/关键词回复，用于不联网或没有 API Key 时的本地验证。启动后同样占用 8000，**与真模型二选一**。
 
 ### 接口约定（给联调用）
 
