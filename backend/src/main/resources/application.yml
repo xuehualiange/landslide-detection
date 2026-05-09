@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: landslide-backend
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+jwt:
+  secret: change-this-secret-in-production
+  expire-hours: 12
+
+chat:
+  api:
+    chat-url: http://localhost:8000/chat
+
+ai:
+  yolo:
+    model-path: models/landslide-yolov8.onnx
+    input-width: 640
+    input-height: 640
+    conf-threshold: 0.002
+    nms-threshold: 0.45
+    class-names:
+      - landslide

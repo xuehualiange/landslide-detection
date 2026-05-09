@@ -1,0 +1,7 @@
+package com.graduation.landslide.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.graduation.landslide.entity.LandslideDetectRecord;
+
+public interface LandslideDetectRecordService extends IService<LandslideDetectRecord> {
+}

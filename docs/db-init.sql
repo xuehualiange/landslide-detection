@@ -1,0 +1,29 @@
+CREATE DATABASE IF NOT EXISTS landslide_db DEFAULT CHARACTER SET utf8mb4;
+USE landslide_db;
+
+CREATE TABLE IF NOT EXISTS sys_user (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(64) NOT NULL UNIQUE,
+  password VARCHAR(128) NOT NULL,
+  role VARCHAR(32) NOT NULL,
+  deleted TINYINT DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS detect_record (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  image_path VARCHAR(255) NOT NULL,
+  confidence DECIMAL(5,4),
+  landslide_area_ratio DECIMAL(6,4),
+  disaster_level VARCHAR(32),
+  created_by VARCHAR(64),
+  created_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS warning_record (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  monitor_point VARCHAR(128) NOT NULL,
+  warning_level VARCHAR(32) NOT NULL,
+  message VARCHAR(255),
+  pushed TINYINT DEFAULT 0,
+  created_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
