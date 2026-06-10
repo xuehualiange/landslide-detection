@@ -1,150 +1,182 @@
-# 基于人工智能算法的滑坡识别系统
+# 滑坡识别系统 Landslide Detection System
 
-## 技术栈
-- 后端：`Spring Boot 2.7`、`MyBatis-Plus`、`MySQL`、`Redis`、`Spring Security`、`JWT`
-- 前端：`Vue 3`、`Vite`、`Element Plus`、`Axios`、`Pinia`
-- AI推理：`Java + OpenCV DNN`（加载 `YOLOv8 ONNX`）
+[![Java](https://img.shields.io/badge/Java-17-blue)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7-green)](https://spring.io/projects/spring-boot)
+[![Vue 3](https://img.shields.io/badge/Vue-3-brightgreen)](https://vuejs.org/)
+[![YOLOv8](https://img.shields.io/badge/YOLOv8-ONNX-red)](https://github.com/ultralytics/ultralytics)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-## 项目结构
-- `backend`：后端服务
-- `frontend`：前端工程
-- `docs`：数据库脚本与文档
-- `start-all.ps1`：一键启动脚本
+> **智能滑坡识别系统 | 从遥感影像自动检测滑坡区域 | 集成大模型智能问答 | 全栈工程化部署**
 
-## 环境要求
-- JDK：17+（推荐 21）
-- Maven：3.9+
-- Node.js：18+
-- MySQL：8.0+
+**在线仓库**：[github.com/xuehualiange/landslide-detection](https://github.com/xuehualiange/landslide-detection)
 
-## 数据库初始化
-在 MySQL 中执行：
+## 🎯 项目亮点
 
-```powershell
-Get-Content "e:\landslide-ai-system\docs\db-schema-v2.sql" | mysql -u root -p
-Get-Content "e:\landslide-ai-system\docs\data.sql" | mysql -u root -p
+- **高性能 AI 推理**：YOLOv8n + ONNX + Java OpenCV DNN，单张 640×640 影像推理 **中位数 103 ms**（CPU，本机压测）
+- **高精度模型**：在 Bijie 滑坡数据集上 **mAP@0.5 达 95.1%**（精确率 90.4%，召回率 91.4%）
+- **大模型增强**：集成 LangChain + DeepSeek，实现多轮记忆智能对话，可解释识别结果、对比历史灾情
+- **全栈闭环**：Spring Boot + Vue 3 + WebSocket 实时预警 + JWT 三级权限
+- **工程化完备**：一键启动脚本、性能压测工具、答辩/部署文档
+
+## 📊 性能指标
+
+| 指标 | 数值 | 说明 |
+|------|------|------|
+| **mAP@0.5** | **95.1%** | 验证集 554 张 |
+| mAP@0.5:0.95 | 64.9% | epoch 100 |
+| 精确率 | 90.4% | - |
+| 召回率 | 91.4% | - |
+| **推理耗时（中位数）** | **103 ms** | 640×640，Java + OpenCV DNN，CPU 全链路 |
+| 训练集规模 | 2773 张 | 正样本 770，负样本 2003 |
+
+## 🏗️ 系统架构
+
+```
+┌─────────────┐     HTTP/WS      ┌──────────────────┐     JNI      ┌─────────────────┐
+│  Vue 3 前端  │ ◄──────────────► │ Spring Boot 后端  │ ◄──────────► │ OpenCV DNN      │
+│ Canvas 标注  │                  │ JWT / 预警 / 记录  │              │ YOLOv8n ONNX    │
+└─────────────┘                  └────────┬─────────┘              └─────────────────┘
+                                          │
+                         ┌────────────────┼────────────────┐
+                         ▼                ▼                ▼
+                    MySQL 8.0         Redis            LangChain API
+                  用户/检测记录      缓存（可选）      DeepSeek 智能问答
 ```
 
-> 如果你已经初始化过数据库，可跳过。
+> 可选：用 draw.io 绘制架构图后，保存为 `docs/architecture.png` 并替换上方 ASCII 图。
 
-## 一键启动（推荐）
-在项目根目录执行（会依次打开 **后端、前端**；若配置了 DeepSeek Key，会再打开 **LangChain 智能助手**）：
+## 🚀 快速开始
+
+### 前置要求
+
+- JDK 17+
+- Maven 3.6+
+- Node.js 18+
+- MySQL 8.0+
+- Redis（可选，默认 localhost:6379）
+
+### 1. 克隆仓库
+
+```bash
+git clone https://github.com/xuehualiange/landslide-detection.git
+cd landslide-detection
+```
+
+### 2. 初始化数据库
+
+在 MySQL 中执行（将路径改为你本机克隆目录）：
+
+```powershell
+Get-Content ".\docs\db-schema-v2.sql" | mysql -u root -p
+Get-Content ".\docs\data.sql" | mysql -u root -p
+```
+
+### 3. 一键启动（推荐，Windows）
+
+在项目**根目录**执行（依次启动后端、前端；若配置了 DeepSeek Key，会再启动智能助手）：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\start-all.ps1
 ```
 
+仅启动前后端、不启 Python 助手：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\start-all.ps1 -SkipAssistant
+```
+
 **智能助手 API Key（任选其一）：**
 
-1. 启动前设置环境变量：`$env:DEEPSEEK_API_KEY = "sk-你的密钥"`
-2. 或在 `langchain-chat-api` 目录下创建文件 **`.deepseek_key`**（纯文本一行，仅密钥，勿提交 Git）
-3. 或传参：`-DeepSeekApiKey "sk-..."`
+1. 启动前：`$env:DEEPSEEK_API_KEY = "sk-你的密钥"`
+2. 在 `langchain-chat-api` 目录创建 `.deepseek_key`（纯文本一行，勿提交 Git）
+3. 传参：`-DeepSeekApiKey "sk-..."`
 
-可选参数示例：
+### 4. 访问地址
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\start-all.ps1 `
-  -JavaHome "C:\Program Files\JetBrains\PyCharm 2024.2.4\jbr" `
-  -MavenHome "E:\apache-maven-3.9.6" `
-  -NodeDir "C:\Program Files\nodejs" `
-  -DbUser "root" `
-  -DbPassword "你的数据库密码" `
-  -DeepSeekApiKey "sk-你的密钥" `
-  -ChatPort "8000"
-```
+| 服务 | 地址 |
+|------|------|
+| 前端 | http://localhost:5173 |
+| 后端 | http://localhost:8080 |
+| 健康检查 | http://localhost:8080/api/health |
+| 智能助手 API | http://localhost:8000/docs |
 
-仅启动前后端、不要 Python 窗口：`start-all.ps1 -SkipAssistant`
+**默认测试账号**（密码均为 `123456`）：`superadmin` / `admin` / `monitor`
 
-默认数据库密码参数为 `root`（与 `application-dev.yml` 中默认一致）；若你本地 MySQL 密码不同，请改 `-DbPassword`。
+更完整的参数说明、手动启动与排错见下文 [常见问题](#-常见问题)。
 
-## 手动启动（备选）
-### 后端
-```powershell
-cd e:\landslide-ai-system\backend
-$env:MAVEN_HOME="E:\apache-maven-3.9.6"
-$env:Path="$env:MAVEN_HOME\bin;$env:Path"
-$env:DB_USERNAME="root"
-$env:DB_PASSWORD="你的数据库密码"
-powershell -ExecutionPolicy Bypass -File .\scripts\start-backend.ps1
-```
+## 🧪 性能压测
 
-### 前端
-```powershell
-cd e:\landslide-ai-system\frontend
-$env:Path="C:\Program Files\nodejs;$env:Path"
-npm install
-npm run dev
-```
-
-## 访问地址
-- 前端：`http://localhost:5173`（若端口占用，Vite 会自动切换）
-- 后端：`http://localhost:8080`
-- 健康检查：`http://localhost:8080/api/health`
-- 智能助手（LangChain，一键启动后）：`http://localhost:8000/docs`
-
-## 默认测试账号
-密码均为 `123456`：
-- `superadmin`
-- `admin`
-- `monitor`
-
-你也可以从登录页进入“注册”创建新的监测员账号。
-
-## 主要功能
-- 登录/注册（JWT）
-- 识别任务（图片上传、结果可视化）
-- 灾情等级判定（I/II/III/IV）
-- 历史记录（分页、筛选、导出）
-- 灾情动态（WebSocket 实时预警、确认处理）
-- 个人中心（查看并修改真实姓名、手机号）
-- 用户/角色管理（管理员与超级管理员）
-
-## YOLO 模型说明
-模型文件路径：
-- `backend/models/landslide-yolov8.onnx`
-
-若模型不存在，系统会降级启动（管理类功能仍可使用）。
-
-## 常见问题
-- 页面提示 `ECONNREFUSED`：后端未启动或端口不通
-- 前端白屏或 Vite 报模板错误：通常是文件编码污染，建议 `Ctrl + F5` 并检查近期改动
-- `mvn` 找不到：检查 `MAVEN_HOME` 与 `Path`
-- 识别框过多/过少：调整后端 `ai.yolo.conf-threshold`
-- 预警列表加载失败：先检查 `http://localhost:8080/api/health` 是否可访问
-
-## 智能助手（对话）
-
-- 登录后在侧边栏进入 **「智能助手」**；Java 后端把请求转发到 Python（配置项 **`chat.api.chat-url`**，默认 **`http://localhost:8000/chat`**）。
-- **端口说明**：同一台电脑上 **`fastapi-chat`**（离线占位）与 **`langchain-chat-api`**（真模型）不要同时占用 **8000**，用哪一个就只启动哪一个。
-
-### 真模型连续对话（推荐）
-
-1. 在 [DeepSeek](https://platform.deepseek.com/) 等平台创建 **API Key**。
-2. **关掉** 占着 8000 端口的 `fastapi-chat` 进程（若之前启过）。
-3. 在 PowerShell 中执行（将密钥换成你的）：
+压测类 `YoloDetectorBenchmark.java` 走与线上一致的 `YoloDetector.detect()` 全链路（读图 → blob → forward → 解析 → NMS）。
 
 ```powershell
-Set-Location -LiteralPath "e:\landslide-ai-system\langchain-chat-api"
-$env:DEEPSEEK_API_KEY = "sk-你的密钥"
-.\start-langchain-chat.ps1
+cd backend
+powershell -ExecutionPolicy Bypass -File scripts\benchmark-yolo.ps1
+# 强制重新编译：加 -Rebuild
 ```
 
+**本机实测结果示例：**
 
+```text
+median : 103 ms  <-- resume
+min/avg/p95/max : 95 / 103.5 / 115 / 115 ms
+```
 
-若提示「禁止运行脚本」：在同一窗口先执行 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass，再执行 `.\start-langchain-chat.ps1`；或改用：powershell -ExecutionPolicy Bypass -File .\start-langchain-chat.ps1。
+## 📁 项目结构
 
-若出现「文件名、目录名或卷标语法不正确」：用 PowerShell（不要用 CMD）逐行执行上面三行；引号用英文半角；勿嵌套外层 powershell。
+```text
+landslide-detection/
+├── backend/                          # Spring Boot 后端
+│   ├── src/main/java/.../ai/
+│   │   ├── YoloDetector.java         # ONNX 推理核心
+│   │   └── YoloDetectorBenchmark.java
+│   ├── models/landslide-yolov8.onnx  # YOLOv8 ONNX 权重
+│   └── scripts/                      # 启动 / 压测 / 环境检查
+├── frontend/                         # Vue 3 前端
+├── langchain-chat-api/               # LangChain + DeepSeek 智能问答
+├── fastapi-chat/                     # 离线占位助手（无 API Key 时）
+├── docs/                             # 数据库脚本、答辩导读、简历片段
+├── tools/                            # 数据集准备、重训练脚本
+└── start-all.ps1                     # 根目录一键启动
+```
 
-或手动：`python -m venv .venv` → `pip install -r requirements.txt` → `python -m uvicorn main:app --host 0.0.0.0 --port 8000`（同样要先设置 **`DEEPSEEK_API_KEY`**）。
+## 🛠️ 技术栈
 
-4. 保持 Spring Boot、前端已启动，浏览器打开 **智能助手** 即可多轮对话。服务端按登录用户区分会话（默认会话 id：`landslide-user-用户名`），历史长度见环境变量 **`CHAT_MAX_ROUNDS`**（默认约 10 轮）。
+| 层 | 技术 |
+|----|------|
+| AI 推理 | YOLOv8n, ONNX, OpenCV DNN |
+| 大模型 | LangChain, DeepSeek API |
+| 后端 | Spring Boot 2.7, MyBatis-Plus, WebSocket, JWT, Spring Security |
+| 前端 | Vue 3, Vite, Element Plus, Canvas |
+| 数据库 | MySQL, Redis |
+| 部署 | PowerShell 一键脚本 |
 
-更完整的 Python 端说明见：`langchain-chat-api/README.md`。
+## 📝 相关文档
 
-### 离线占位（无 API Key 时）
+- [答辩代码导读](docs/答辩代码导读.md)
+- [简历项目描述（含实测指标）](docs/resume-project-snippet.md)
+- [智能助手说明](langchain-chat-api/README.md)
 
-- 使用 **`fastapi-chat`**：规则/关键词回复，用于不联网或没有 API Key 时的本地验证。启动后同样占用 8000，**与真模型二选一**。
+## 📄 开源协议
 
-### 接口约定（给联调用）
+MIT License
 
-- `POST /api/assistant/chat`：请求体 `userInput`，可选 `language`、`sessionId`；清空上下文：`POST /api/assistant/chat/reset`。
+## 📧 联系我
+
+- 邮箱：1270231737@qq.com
+- GitHub：[xuehualiange](https://github.com/xuehualiange)
+
+## 🙏 致谢
+
+- 毕设来源于国家重点研发计划子课题《地下多源多场传感集成的特大滑坡实时监测技术与装备研制》
+- 数据集：[Bijie Landslide Dataset](https://github.com/zhaoyangxia/landslide-dataset)
+- 框架：Ultralytics YOLOv8, OpenCV DNN, LangChain
+
+---
+
+## ❓ 常见问题
+
+- **页面 `ECONNREFUSED`**：后端未启动或端口不通，先访问 `/api/health`
+- **`mvn` 找不到**：检查 `MAVEN_HOME` 与 `Path`，或使用 `start-all.ps1` 自动配置
+- **识别框过多/过少**：调整后端 `ai.yolo.conf-threshold`（当前默认 0.45）
+- **智能助手不可用**：确认 8000 端口 LangChain 服务已启，且已配置 `DEEPSEEK_API_KEY`
+- **模型缺失**：将 ONNX 放到 `backend/models/landslide-yolov8.onnx`；缺失时系统降级启动，管理功能仍可用
