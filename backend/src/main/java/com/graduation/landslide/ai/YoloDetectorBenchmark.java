@@ -48,7 +48,7 @@ public final class YoloDetectorBenchmark {
         }
         Arrays.sort(ms);
         long median = ms[RUNS / 2];
-        System.out.printf(Locale.ROOT, "median : %d ms  <-- resume%n", median);
+        System.out.printf(Locale.ROOT, "median : %d ms%n", median);
         System.out.printf(Locale.ROOT, "min/avg/p95/max : %d / %.1f / %d / %d ms%n",
                 ms[0], Arrays.stream(ms).average().orElse(0), ms[(int)Math.ceil(RUNS*0.95)-1], ms[RUNS-1]);
         System.out.println("boxes (last): " + lastBoxes);

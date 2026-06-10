@@ -8,10 +8,6 @@
 
 > **智能滑坡识别系统 | 从遥感影像自动检测滑坡区域 | 集成大模型智能问答 | 全栈工程化部署**
 <p align="center">
-  <strong>国家重点研发计划子课题成果</strong>
-</p>
-
-<p align="center">
   <a href="#-性能指标"><img src="https://img.shields.io/badge/单张推理-103ms-2ea44f?style=for-the-badge&logo=openjdk&logoColor=white" alt="103ms"/></a>
   &nbsp;
   <a href="#-性能指标"><img src="https://img.shields.io/badge/mAP@0.5-95.1%25-critical?style=for-the-badge&logo=target&logoColor=white" alt="mAP 95.1%"/></a>
@@ -30,7 +26,7 @@
 - **高精度模型**：在 Bijie 滑坡数据集上 **mAP@0.5 达 95.1%**（精确率 90.4%，召回率 91.4%）
 - **大模型增强**：集成 LangChain + DeepSeek，实现多轮记忆智能对话，可解释识别结果、对比历史灾情
 - **全栈闭环**：Spring Boot + Vue 3 + WebSocket 实时预警 + JWT 三级权限
-- **工程化完备**：一键启动脚本、性能压测工具、答辩/部署文档
+- **工程化完备**：一键启动脚本、性能压测工具、完整技术文档
 
 ## 📊 性能指标
 
@@ -142,7 +138,7 @@ powershell -ExecutionPolicy Bypass -File scripts\benchmark-yolo.ps1
 **本机实测结果示例：**
 
 ```text
-median : 103 ms  <-- resume
+median : 103 ms
 min/avg/p95/max : 95 / 103.5 / 115 / 115 ms
 ```
 
@@ -159,7 +155,7 @@ landslide-detection/
 ├── frontend/                         # Vue 3 前端
 ├── langchain-chat-api/               # LangChain + DeepSeek 智能问答
 ├── fastapi-chat/                     # 离线占位助手（无 API Key 时）
-├── docs/                             # 数据库脚本、答辩导读、简历片段
+├── docs/                             # 数据库脚本与说明
 ├── tools/                            # 数据集准备、重训练脚本
 └── start-all.ps1                     # 根目录一键启动
 ```
@@ -177,8 +173,6 @@ landslide-detection/
 
 ## 📝 相关文档
 
-- [答辩代码导读](docs/答辩代码导读.md)
-- [简历项目描述（含实测指标）](docs/resume-project-snippet.md)
 - [智能助手说明](langchain-chat-api/README.md)
 
 ## 📄 开源协议
@@ -192,7 +186,6 @@ MIT License
 
 ## 🙏 致谢
 
-- 毕设来源于国家重点研发计划子课题《地下多源多场传感集成的特大滑坡实时监测技术与装备研制》
 - 数据集：[Bijie Landslide Dataset](https://github.com/zhaoyangxia/landslide-dataset)
 - 框架：Ultralytics YOLOv8, OpenCV DNN, LangChain
 
