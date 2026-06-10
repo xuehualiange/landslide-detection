@@ -45,19 +45,30 @@
 
 ## 🏗️ 系统架构
 
-```
-┌─────────────┐     HTTP/WS      ┌──────────────────┐     JNI      ┌─────────────────┐
-│  Vue 3 前端  │ ◄──────────────► │ Spring Boot 后端  │ ◄──────────► │ OpenCV DNN      │
-│ Canvas 标注  │                  │ JWT / 预警 / 记录  │              │ YOLOv8n ONNX    │
-└─────────────┘                  └────────┬─────────┘              └─────────────────┘
-                                          │
-                         ┌────────────────┼────────────────┐
-                         ▼                ▼                ▼
-                    MySQL 8.0         Redis            LangChain API
-                  用户/检测记录      缓存（可选）      DeepSeek 智能问答
-```
+```mermaid
+flowchart TD
+    U([用户]) --> FE[Vue 3 前端<br/>Element Plus · Canvas]
 
-> 可选：用 draw.io 绘制架构图后，保存为 `docs/architecture.png` 并替换上方 ASCII 图。
+    FE -->|HTTP REST<br/>JWT Token| API[Spring Boot<br/>RESTful API · JWT 鉴权]
+    FE <-->|WebSocket<br/>实时预警| WS[Spring Boot<br/>WebSocket 推送]
+
+    API --> SVC[业务服务层<br/>识别 · 等级判定 · 助手代理]
+    WS --> SVC
+
+    SVC -->|查询/写入用户与记录| DB[(MySQL<br/>用户 · 识别历史 · 预警)]
+
+    SVC -->|上传影像字节流| AI[YOLOv8 ONNX<br/>OpenCV DNN]
+    AI -->|检测框 · 置信度 · 类别| SVC
+
+    SVC -->|注入识别结果 + 用户问题| LC[LangChain Chat API<br/>Python 服务]
+    LC -->|API 调用| DS[DeepSeek API<br/>大模型对话]
+    DS -->|模型回复| LC
+    LC -->|智能问答响应| SVC
+
+    SVC --> API
+    API -->|JSON 响应| FE
+    WS -->|预警消息推送| FE
+```
 
 ## 🚀 快速开始
 
