@@ -1,0 +1,22 @@
+# =============================================================================
+# GitHub Linguist — language statistics
+# Core stack: Java (backend) + Vue/TS (frontend).
+# Auxiliary Python services are vendored so they do not dominate the language bar.
+# =============================================================================
+
+# LangChain / DeepSeek assistant service
+langchain-chat-api/** linguist-vendored linguist-language=Python
+
+# Offline FAQ assistant (FastAPI)
+fastapi-chat/** linguist-vendored linguist-language=Python
+
+# Training / eval utility scripts (not application core)
+tools/** linguist-vendored linguist-language=Python
+
+# Optional: root-level Python scripts (add filenames here if you add them later)
+# train.py linguist-vendored linguist-language=Python
+
+# Normalize line endings
+* text=auto
+*.sh text eol=lf
+*.ps1 text eol=crlf
