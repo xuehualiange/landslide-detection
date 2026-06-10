@@ -30,6 +30,10 @@ import java.util.Map;
 
 @Slf4j
 @Component
+/**
+ * YOLOv8 滑坡检测器（OpenCV DNN + ONNX）。
+ * 启动时加载模型；detect() 完成：解码图片 -> 推理 -> 置信度过滤 -> NMS -> 返回检测框。
+ */
 public class YoloDetector {
 
     @Value("${ai.yolo.model-path}")
@@ -41,7 +45,7 @@ public class YoloDetector {
     @Value("${ai.yolo.input-height:640}")
     private int inputHeight;
 
-    @Value("${ai.yolo.conf-threshold:0.002}")
+    @Value("${ai.yolo.conf-threshold:0.45}")
     private float confThreshold;
 
     @Value("${ai.yolo.nms-threshold:0.45}")
@@ -54,6 +58,7 @@ public class YoloDetector {
     private volatile boolean modelReady = false;
     private volatile Map<String, Object> lastDebugInfo = Collections.emptyMap();
 
+    /** 应用启动时加载 OpenCV 与 ONNX 模型；失败则降级（modelReady=false） */
     @PostConstruct
     public void init() {
         try {
@@ -78,6 +83,11 @@ public class YoloDetector {
         }
     }
 
+    /**
+     * 对图片字节流执行滑坡目标检测。
+     * @param imageBytes 上传的 JPEG/PNG 等原始字节
+     * @return 检测框列表（类别、置信度、像素坐标）；模型未就绪时返回空列表
+     */
     public synchronized List<DetectionBox> detect(byte[] imageBytes) {
         if (!modelReady || imageBytes == null || imageBytes.length == 0) {
             Map<String, Object> debug = new HashMap<>();
@@ -99,6 +109,7 @@ public class YoloDetector {
                 throw new IllegalArgumentException("Image bytes cannot be decoded");
             }
 
+            // 缩放到 640x640、归一化到 [0,1]，构造网络输入
             blob = Dnn.blobFromImage(
                     image,
                     1.0 / 255.0,
@@ -155,6 +166,7 @@ public class YoloDetector {
             MatOfRect2d matBoxes = new MatOfRect2d();
             matBoxes.fromList(boxes);
             MatOfInt indices = new MatOfInt();
+            // 非极大值抑制：去掉重叠框，降低重复检测
             Dnn.NMSBoxes(matBoxes, confidences, effectiveConf, nmsThreshold, indices);
 
             List<DetectionBox> result = new ArrayList<>();

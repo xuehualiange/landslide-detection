@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+/** 灾情评估：YOLO 检测 -> 等级划分 -> 存记录 -> 必要时预警 */
 public class DisasterLevelServiceImpl implements DisasterLevelService {
 
     private final YoloDetector yoloDetector;
@@ -35,6 +36,7 @@ public class DisasterLevelServiceImpl implements DisasterLevelService {
 
     @Override
     public DisasterAssessmentResult assessAndWarn(Long userId, String imagePath, byte[] imageBytes) {
+        // YOLOv8 ONNX 推理，得到滑坡检测框列表
         List<YoloDetector.DetectionBox> boxes = yoloDetector.detect(imageBytes);
 
         BigDecimal area = calculateArea(boxes);
@@ -71,6 +73,7 @@ public class DisasterLevelServiceImpl implements DisasterLevelService {
                 debugInfo
         );
 
+        // I/II 级触发实时预警推送
         if (warningTriggered) {
             String warningMsg = String.format(
                     "滑坡预警：灾情%s，面积%s，最大置信度%s，变形速率%smm/天，请附近工作人员尽快核查。",
@@ -110,6 +113,7 @@ public class DisasterLevelServiceImpl implements DisasterLevelService {
         return BigDecimal.valueOf(max).setScale(4, RoundingMode.HALF_UP);
     }
 
+    /** 按检测框面积与最大置信度划分 I~IV 级 */
     private String classifyDisasterLevel(BigDecimal area, BigDecimal confidence) {
         if (area.compareTo(BigDecimal.valueOf(50000)) > 0 || confidence.compareTo(BigDecimal.valueOf(0.9)) > 0) {
             return "I级特别重大";

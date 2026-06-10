@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/** 管理员：识别历史分页、导出 */
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('MONITOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")

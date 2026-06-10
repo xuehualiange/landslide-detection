@@ -7,6 +7,20 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
 > **智能滑坡识别系统 | 从遥感影像自动检测滑坡区域 | 集成大模型智能问答 | 全栈工程化部署**
+<p align="center">
+  <strong>国家重点研发计划子课题成果</strong>
+</p>
+
+<p align="center">
+  <a href="#-性能指标"><img src="https://img.shields.io/badge/单张推理-103ms-2ea44f?style=for-the-badge&logo=openjdk&logoColor=white" alt="103ms"/></a>
+  &nbsp;
+  <a href="#-性能指标"><img src="https://img.shields.io/badge/mAP@0.5-95.1%25-critical?style=for-the-badge&logo=target&logoColor=white" alt="mAP 95.1%"/></a>
+  &nbsp;
+  <a href="#-性能指标"><img src="https://img.shields.io/badge/P-90.4%25-blue?style=for-the-badge" alt="P 90.4%"/></a>
+  &nbsp;
+  <a href="#-性能指标"><img src="https://img.shields.io/badge/R-91.4%25-blue?style=for-the-badge" alt="R 91.4%"/></a>
+</p>
+
 
 **在线仓库**：[github.com/xuehualiange/landslide-detection](https://github.com/xuehualiange/landslide-detection)
 

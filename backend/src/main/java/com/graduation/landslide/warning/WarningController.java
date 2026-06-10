@@ -22,6 +22,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/warning")
+/** 灾情动态：预警列表、未读数、确认处理 */
 public class WarningController {
 
     private final WarningEventService warningEventService;

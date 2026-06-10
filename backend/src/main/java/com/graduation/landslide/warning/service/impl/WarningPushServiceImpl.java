@@ -12,8 +12,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+/** 预警推送实现：数据库落库 + WebSocket 广播到 /topic/warning/nearby */
 public class WarningPushServiceImpl implements WarningPushService {
 
+    /** Spring 消息模板，用于 STOMP 推送 */
     private final SimpMessagingTemplate messagingTemplate;
     private final WarningEventService warningEventService;
 
@@ -25,6 +27,7 @@ public class WarningPushServiceImpl implements WarningPushService {
 
     @Override
     public void pushToNearbyWorkers(String message, DisasterAssessmentResult result) {
+        // 1. 写入预警表，供灾情动态列表与确认处理
         WarningEvent event = new WarningEvent();
         event.setMessage(message);
         event.setDisasterLevel(result.getDisasterLevel());
@@ -34,6 +37,7 @@ public class WarningPushServiceImpl implements WarningPushService {
         event.setStatus("UNREAD");
         warningEventService.save(event);
 
+        // 2. 推送给已订阅 WebSocket 的前端
         Map<String, Object> payload = new HashMap<>();
         payload.put("id", event.getId());
         payload.put("message", event.getMessage());

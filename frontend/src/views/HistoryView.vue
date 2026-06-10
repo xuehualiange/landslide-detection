@@ -57,6 +57,7 @@
 </template>
 
 <script setup>
+// 历史记录：分页查询识别记录，支持筛选与导出
 import { reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import request from "../utils/request";

@@ -1,4 +1,4 @@
-﻿# LangChain + FastAPI chat (DeepSeek). Run inside langchain-chat-api folder.
+# LangChain + FastAPI chat (DeepSeek). Run inside langchain-chat-api folder.
 # Windows PowerShell 5.1 compatible (Join-Path uses -Path, not -LiteralPath)
 # Before run: $env:DEEPSEEK_API_KEY = "sk-..."
 # If execution policy blocks: Set-ExecutionPolicy -Scope Process Bypass
@@ -35,8 +35,12 @@ Set-Location -LiteralPath $root
 $key = $DeepSeekKey
 if (-not $key) { $key = [Environment]::GetEnvironmentVariable("DEEPSEEK_API_KEY", "Process") }
 if (-not $key) { $key = [Environment]::GetEnvironmentVariable("DEEPSEEK_API_KEY", "User") }
+$keyFile = Join-Path -Path $root -ChildPath ".deepseek_key"
+if (-not $key -and (Test-Path -LiteralPath $keyFile)) {
+    $key = (Get-Content -LiteralPath $keyFile -Raw -ErrorAction SilentlyContinue).Trim()
+}
 if (-not $key) {
-    Write-Host "ERROR: Set DEEPSEEK_API_KEY first. Example: `$env:DEEPSEEK_API_KEY = 'sk-...'" -ForegroundColor Red
+    Write-Host "ERROR: Set DEEPSEEK_API_KEY or create .deepseek_key (one line). Example: `$env:DEEPSEEK_API_KEY = 'sk-...'" -ForegroundColor Red
     exit 1
 }
 

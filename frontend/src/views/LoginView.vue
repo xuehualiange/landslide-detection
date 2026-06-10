@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div style="max-width: 380px; margin: 120px auto">
     <el-card>
       <template #header>滑坡识别系统登录</template>
@@ -22,6 +22,7 @@
 </template>
 
 <script setup>
+// 登录页：提交账号密码，保存 JWT 到 store
 import { reactive } from "vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";

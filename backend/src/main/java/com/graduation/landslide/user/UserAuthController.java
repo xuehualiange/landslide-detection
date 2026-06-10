@@ -36,6 +36,7 @@ import java.util.Locale;
 @Slf4j
 @RestController
 @RequestMapping("/api/user")
+/** 用户登录、注册、个人中心 */
 public class UserAuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -56,6 +57,7 @@ public class UserAuthController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /** 校验账号密码，返回 JWT */
     @PostMapping("/login")
     public ApiResponse<UserLoginResponse> login(@Validated @RequestBody UserLoginRequest request) {
         try {

@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
+/** HTTP 调用 Python 端 /chat 与 /chat/reset */
 public class ChatApiService {
 
     private static final String USER_INPUT_KEY = "user_input";

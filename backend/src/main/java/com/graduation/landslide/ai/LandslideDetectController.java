@@ -19,6 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/detect")
+/** 滑坡影像识别 REST 接口（上传图片、查询模型状态） */
 public class LandslideDetectController {
 
     private final DisasterLevelService disasterLevelService;
@@ -33,6 +34,7 @@ public class LandslideDetectController {
         this.yoloDetector = yoloDetector;
     }
 
+    /** 上传图片并返回检测框、灾情等级、是否预警等 */
     @PostMapping("/image")
     public ApiResponse<DisasterAssessmentResult> detect(@RequestParam("file") MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -83,6 +85,7 @@ public class LandslideDetectController {
         return anyUser == null ? null : anyUser.getId();
     }
 
+    /** 前端用来显示「模型已加载 / 降级模式」 */
     @GetMapping("/model/status")
     public ApiResponse<Map<String, Object>> modelStatus() {
         Map<String, Object> data = new HashMap<>();

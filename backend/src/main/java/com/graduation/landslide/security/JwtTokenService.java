@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+/** JWT 令牌签发与校验 */
 public class JwtTokenService {
 
     @Value("${jwt.secret}")
@@ -25,6 +26,7 @@ public class JwtTokenService {
     @Value("${jwt.expire-hours:12}")
     private Integer expireHours;
 
+    /** 登录成功后生成 Token，内含用户名与角色 */
     public String generateToken(UserDetails userDetails) {
         Date now = new Date();
         Date expireAt = new Date(now.getTime() + expireHours * 3600_000L);

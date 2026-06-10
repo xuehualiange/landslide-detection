@@ -24,6 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import javax.servlet.http.HttpServletResponse;
 
 @Configuration
+/** Spring Security：CORS、JWT 过滤器、URL 放行规则 */
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 

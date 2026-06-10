@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <el-card>
     <template #header>
       <div class="header-row">
@@ -82,6 +82,7 @@
 </template>
 
 <script setup>
+// 灾情动态：拉取预警列表 + WebSocket 实时刷新 + 确认 ACK
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 import SockJS from "sockjs-client/dist/sockjs";

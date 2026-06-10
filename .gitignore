@@ -1,23 +1,104 @@
-backend/target/
-frontend/node_modules/
-frontend/dist/
+# =============================================================================
+# Landslide Detection System — root .gitignore
+# Spring Boot (backend/) + Vue 3 (frontend/)
+# =============================================================================
+
+# --- Java / Maven ---
+target/
+**/target/
+*.class
+*.jar
+!**/gradle-wrapper.jar
+*.war
+*.ear
+hs_err_pid*
+replay_pid*
+
+# --- Frontend (Node / Vite) ---
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.npm
+*.tsbuildinfo
+.vite/
+
+# --- IDE ---
 .idea/
 *.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# --- Logs ---
 *.log
+logs/
+**/logs/
 
-langchain-chat-api/.deepseek_key
-*.deepseek_key
+# --- OS ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
 
+# --- Local / override config (do not commit) ---
+application-local.yml
+application-local.yaml
+application-local.properties
+**/application-local.yml
+**/application-local.yaml
+**/application-local.properties
+*.local.properties
+*.local.yml
+*.local.yaml
 
-# Python
-langchain-chat-api/.venv/
-__pycache__/
-*.py[cod]
-*.egg-info/
+# --- Secrets & credentials ---
 .env
 .env.*
+!.env.example
+secrets.yml
+secrets.yaml
+**/secrets.yml
+**/secrets.yaml
+*.pem
+*.key
+*.p12
+*.jks
+langchain-chat-api/.deepseek_key
+*.deepseek_key
+.deepseek_key
 
-# OS / IDE
-.DS_Store
-Thumbs.db
-.vscode/
+# --- Python (LangChain / FastAPI assistants) ---
+langchain-chat-api/.venv/
+fastapi-chat/.venv/
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Build / coverage / temp ---
+coverage/
+*.lcov
+.nyc_output
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig

@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Validated
 @RestController
 @RequestMapping("/api/assistant")
+/** 智能助手：转发到 Python LangChain/FastAPI 对话服务 */
 public class AssistantChatController {
 
     private final ChatApiService chatApiService;

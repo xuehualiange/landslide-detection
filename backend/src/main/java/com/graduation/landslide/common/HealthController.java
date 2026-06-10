@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/** 健康检查，供启动脚本与运维探测 */
 @RestController
 @RequestMapping("/api")
 public class HealthController {

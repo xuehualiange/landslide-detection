@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <el-card>
     <template #header>
       <div class="hdr">
@@ -42,6 +42,7 @@
 </template>
 
 <script setup>
+// 智能助手：调用 /api/assistant/chat，由 Java 转发 Python 大模型
 import { nextTick, ref } from "vue";
 import { ElMessage } from "element-plus";
 import request from "../utils/request";

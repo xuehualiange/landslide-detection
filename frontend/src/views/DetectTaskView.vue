@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <el-card>
     <template #header>{{ t.uploadHeader }}</template>
 
@@ -68,6 +68,7 @@
 </template>
 
 <script setup>
+// 识别任务页：上传图片 -> 调用 /api/detect/image -> 展示等级与 Canvas 画框
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
@@ -139,6 +140,7 @@ const loadModelStatus = async () => {
   }
 };
 
+/** 提交 FormData 到后端进行 YOLO 识别与灾情评估 */
 const submitDetect = async () => {
   if (!selectedFile.value || loading.value) return;
   loading.value = true;
@@ -184,6 +186,7 @@ const levelReason = computed(() => {
   return `\u9762\u79ef=${result.value.landslideArea}\uff0c\u6700\u5927\u7f6e\u4fe1\u5ea6=${result.value.maxConfidence}\uff0c\u53d8\u5f62\u901f\u7387=${result.value.latestDeformationRate} mm/\u5929`;
 });
 
+/** 在 Canvas 上绘制红色检测框与类别/置信度标签 */
 const drawBoxes = () => {
   if (!canvasRef.value || !previewUrl.value) return;
 
