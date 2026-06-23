@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 cd /d "%~dp0"
 set "PY=%CD%\.venv\Scripts\python.exe"
-set "PORT=8000"
+if "%PORT%"=="" set "PORT=8000"
 set "HF_ENDPOINT=https://hf-mirror.com"
 
 if /i "%~1"=="--reinstall" (

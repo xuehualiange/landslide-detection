@@ -32,6 +32,8 @@ services:
       DB_USERNAME: root
       DB_PASSWORD: mysql
       RAG_API_ASK_URL: http://rag-service:8000/ask
+      # LangChain chat runs outside compose on host:8001; set when using assistant:
+      CHAT_API_CHAT_URL: http://host.docker.internal:8001/chat
     depends_on:
       - mysql
       - rag-service

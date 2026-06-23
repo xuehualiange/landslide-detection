@@ -4,7 +4,7 @@
 
 ## 端口
 
-默认 **8000**（`/ask`）。若与 `langchain-chat-api` 冲突，可设置环境变量 `PORT=8001`，并同步修改 Spring `rag.api.ask-url`。
+默认 **8000**（`/ask`）。与 `langchain-chat-api` 同时运行时，知识库保持 8000，智能助手使用 **8001**（`start-all.ps1` 默认配置）。
 
 ## 快速开始
 

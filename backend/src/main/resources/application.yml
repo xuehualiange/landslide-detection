@@ -23,7 +23,7 @@ jwt:
 
 chat:
   api:
-    chat-url: http://localhost:8000/chat
+    chat-url: ${CHAT_API_CHAT_URL:http://localhost:8001/chat}
 
 ai:
   yolo:

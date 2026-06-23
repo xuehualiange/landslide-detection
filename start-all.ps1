@@ -5,8 +5,10 @@ param(
     [string]$DbUser = "root",
     [string]$DbPassword = "mysql",
     [string]$DeepSeekApiKey = "",
-    [string]$ChatPort = "8000",
+    [string]$ChatPort = "8001",
+    [string]$RagPort = "8000",
     [switch]$SkipAssistant,
+    [switch]$SkipRag,
     [switch]$ForceLangChain,
     [switch]$ForceOfflineAssistant,
     [switch]$SkipPreflight
@@ -22,6 +24,8 @@ $backendDir = Join-Path $projectRoot "backend"
 $frontendDir = Join-Path $projectRoot "frontend"
 $langchainDir = Join-Path $projectRoot "langchain-chat-api"
 $fastapiDir = Join-Path $projectRoot "fastapi-chat"
+$ragDir = Join-Path $projectRoot "rag-service"
+$ragStartBat = Join-Path $ragDir "start.bat"
 $langchainScript = Join-Path $langchainDir "start-langchain-chat.ps1"
 $fastapiScript = Join-Path $fastapiDir "start-fastapi-chat.ps1"
 
@@ -196,6 +200,8 @@ $backendCommand = @"
 `$env:Path='`$env:JAVA_HOME\bin;`$env:MAVEN_HOME\bin;' + `$env:Path;
 `$env:DB_USERNAME='$dbUserEsc';
 `$env:DB_PASSWORD='$dbPassEsc';
+`$env:CHAT_API_CHAT_URL='http://localhost:$ChatPort/chat';
+`$env:RAG_API_ASK_URL='http://localhost:$RagPort/ask';
 Set-Location '$bd';
 Write-Host 'Building backend (mvn package)...' -ForegroundColor Cyan;
 & "`$env:MAVEN_HOME\bin\mvn.cmd" -q -DskipTests package;
@@ -218,7 +224,7 @@ Write-Host 'Starting frontend (npm run dev)...' -ForegroundColor Green;
 & '$nd\npm.cmd' run dev
 "@
 
-Write-Host "[1/3] Starting backend (port 8080)..." -ForegroundColor Cyan
+Write-Host "[1/4] Starting backend (port 8080)..." -ForegroundColor Cyan
 Start-Process powershell -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $backendCommand)
 
 $healthUrl = "http://localhost:8080/api/health"
@@ -228,7 +234,7 @@ if (Wait-HttpOk -Url $healthUrl -MaxSeconds 150 -Label "backend") {
     Write-Host "      WARN: backend not ready within 150s. Check the backend window for errors." -ForegroundColor Yellow
 }
 
-Write-Host "[2/3] Starting frontend (port 5173)..." -ForegroundColor Cyan
+Write-Host "[2/4] Starting frontend (port 5173)..." -ForegroundColor Cyan
 Start-Process powershell -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $frontendCommand)
 Start-Sleep -Seconds 1
 
@@ -258,14 +264,14 @@ if (-not $SkipAssistant) {
         $langEsc = Escape-SingleQuoted $langchainDir
         $scriptEsc = Escape-SingleQuoted $langchainScript
         $assistantCommand = "`$env:DEEPSEEK_API_KEY='$keyEsc'; Set-Location -LiteralPath '$langEsc'; Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; & '$scriptEsc' -Port '$ChatPort' -DeepSeekKey '$keyEsc'"
-        Write-Host "[3/3] Starting LangChain assistant (port $ChatPort)..." -ForegroundColor Cyan
+        Write-Host "[3/4] Starting LangChain assistant (port $ChatPort)..." -ForegroundColor Cyan
         Start-Process powershell -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $assistantCommand)
     } elseif ($useOffline -and (Test-Path $fastapiScript)) {
         $assistantMode = "offline"
         $fastEsc = Escape-SingleQuoted $fastapiDir
         $fastScriptEsc = Escape-SingleQuoted $fastapiScript
         $assistantCommand = "Set-Location -LiteralPath '$fastEsc'; Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; & '$fastScriptEsc' -Port '$ChatPort'"
-        Write-Host "[3/3] Starting offline assistant (port $ChatPort)..." -ForegroundColor Cyan
+        Write-Host "[3/4] Starting offline assistant (port $ChatPort)..." -ForegroundColor Cyan
         Write-Host "      No DeepSeek key - using FAQ placeholder. Add langchain-chat-api\.deepseek_key to enable LangChain." -ForegroundColor Yellow
         Start-Process powershell -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $assistantCommand)
     } else {
@@ -281,7 +287,32 @@ if (-not $SkipAssistant) {
         }
     }
 } else {
-    Write-Host "[3/3] Assistant skipped (-SkipAssistant)." -ForegroundColor DarkGray
+    Write-Host "[3/4] Assistant skipped (-SkipAssistant)." -ForegroundColor DarkGray
+}
+
+
+$ragMode = "none"
+if (-not $SkipRag) {
+    if (Test-Path $ragStartBat) {
+        $ragMode = "rag"
+        $ragApiKey = Get-DeepSeekApiKey -Override $DeepSeekApiKey
+        $ragDirEsc = Escape-SingleQuoted $ragDir
+        $ragBatEsc = Escape-SingleQuoted $ragStartBat
+        $ragKeyEsc = Escape-SingleQuoted $ragApiKey
+        $ragCommand = "`$env:PORT='$RagPort'; `$env:PYTHONUTF8='1'; if ('$ragKeyEsc') { `$env:DEEPSEEK_API_KEY='$ragKeyEsc' }; Set-Location -LiteralPath '$ragDirEsc'; cmd /c '$ragBatEsc'"
+        Write-Host "[4/4] Starting RAG service (port $RagPort)..." -ForegroundColor Cyan
+        Start-Process powershell -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $ragCommand)
+        $ragHealthUrl = "http://localhost:$RagPort/health"
+        if (Wait-HttpOk -Url $ragHealthUrl -MaxSeconds 180 -Label "RAG") {
+            Write-Host "      RAG service is ready." -ForegroundColor Green
+        } else {
+            Write-Host "      WARN: RAG service not ready within 180s." -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "[4/4] WARN: rag-service start.bat missing, skipped." -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "[4/4] RAG skipped (-SkipRag)." -ForegroundColor DarkGray
 }
 
 Write-Host ""
@@ -296,7 +327,10 @@ if ($assistantMode -eq "langchain") {
 } elseif ($assistantMode -eq "offline") {
     Write-Host "  Assistant: http://localhost:$ChatPort/docs (offline FAQ)" -ForegroundColor Yellow
 }
+if ($ragMode -eq "rag") {
+    Write-Host "  RAG:       http://localhost:$RagPort/ask" -ForegroundColor Yellow
+}
 Write-Host "  Login: superadmin / admin / monitor  password: 123456" -ForegroundColor DarkGray
 Write-Host ""
-Write-Host "Overrides: -JavaHome -MavenHome -NodeDir -DbPassword -DeepSeekApiKey -SkipAssistant" -ForegroundColor DarkGray
+Write-Host "Overrides: -JavaHome -MavenHome -NodeDir -DbPassword -DeepSeekApiKey -ChatPort -RagPort -SkipAssistant -SkipRag" -ForegroundColor DarkGray
 Write-Host ""
