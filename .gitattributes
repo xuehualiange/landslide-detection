@@ -20,3 +20,4 @@ tools/** linguist-vendored linguist-language=Python
 * text=auto
 *.sh text eol=lf
 *.ps1 text eol=crlf
+rag-service/** linguist-vendored linguist-language=Python

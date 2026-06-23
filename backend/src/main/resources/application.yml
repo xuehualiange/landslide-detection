@@ -34,3 +34,7 @@ ai:
     nms-threshold: 0.45
     class-names:
       - landslide
+
+rag:
+  api:
+    ask-url: ${RAG_API_ASK_URL:http://localhost:8000/ask}

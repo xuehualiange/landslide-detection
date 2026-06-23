@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <el-container style="min-height: 100vh">
     <el-aside width="220px" style="background: #001529">
       <div class="logo">滑坡识别系统</div>
@@ -39,6 +39,7 @@ const auth = useAuthStore();
 const allMenus = [
   { path: "/detect-task", title: "识别任务", roles: ["MONITOR", "ADMIN", "SUPER_ADMIN"] },
   { path: "/ai-chat", title: "智能助手", roles: ["MONITOR", "ADMIN", "SUPER_ADMIN"] },
+  { path: "/rag-ask", title: "知识库问答", roles: ["MONITOR", "ADMIN", "SUPER_ADMIN"] },
   { path: "/history", title: "历史记录", roles: ["MONITOR", "ADMIN", "SUPER_ADMIN"] },
   { path: "/profile", title: "个人中心", roles: ["MONITOR", "ADMIN", "SUPER_ADMIN"] },
   { path: "/users", title: "用户管理", roles: ["ADMIN", "SUPER_ADMIN"] },
@@ -79,3 +80,4 @@ const logout = () => {
   justify-content: space-between;
 }
 </style>
+

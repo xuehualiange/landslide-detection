@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+﻿import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
@@ -10,6 +10,7 @@ import UserManageView from "../views/UserManageView.vue";
 import DisasterFeedView from "../views/DisasterFeedView.vue";
 import RoleManageView from "../views/RoleManageView.vue";
 import ChatAssistantView from "../views/ChatAssistantView.vue";
+import RagAskView from "../views/RagAskView.vue";
 
 const routes = [
   { path: "/login", component: LoginView, meta: { public: true } },
@@ -61,6 +62,12 @@ const routes = [
         name: "ai-chat",
         component: ChatAssistantView,
         meta: { title: "滑坡智能助手", roles: ["MONITOR", "ADMIN", "SUPER_ADMIN"] }
+      },
+      {
+        path: "rag-ask",
+        name: "rag-ask",
+        component: RagAskView,
+        meta: { title: "知识库问答", roles: ["MONITOR", "ADMIN", "SUPER_ADMIN"] }
       }
     ]
   }

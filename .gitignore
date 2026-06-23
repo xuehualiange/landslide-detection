@@ -102,3 +102,17 @@ temp/
 *.tmp
 *.bak
 *.orig
+# --- RAG service ---
+rag-service/.venv/
+rag-service/chroma_db/
+rag-service/.deepseek_key
+
+rag-service/faiss_index/
+
+
+rag-service/.venv_broken_*/
+rag-service/_test_*.json
+rag-service/_cmp_test*.json
+rag-service/_write_rag.py
+rag-service/_patch_*.py
+

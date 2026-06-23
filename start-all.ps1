@@ -198,12 +198,12 @@ $backendCommand = @"
 `$env:DB_PASSWORD='$dbPassEsc';
 Set-Location '$bd';
 Write-Host 'Building backend (mvn package)...' -ForegroundColor Cyan;
-& mvn -q -DskipTests package;
+& "`$env:MAVEN_HOME\bin\mvn.cmd" -q -DskipTests package;
 if (`$LASTEXITCODE -ne 0) { Write-Host 'FAIL: mvn package failed' -ForegroundColor Red; exit 1 }
 `$jar = Get-ChildItem .\target\*.jar | Where-Object { `$_.Name -notlike 'original-*' } | Sort-Object LastWriteTime -Descending | Select-Object -First 1;
 if (-not `$jar) { Write-Host 'FAIL: jar not found under target/' -ForegroundColor Red; exit 1 }
 Write-Host "Starting backend: `$(`$jar.Name)" -ForegroundColor Green;
-& java -jar `$jar.FullName
+& "`$env:JAVA_HOME\bin\java.exe" -jar `$jar.FullName
 "@
 
 $frontendCommand = @"
