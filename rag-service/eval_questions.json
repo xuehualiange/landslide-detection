@@ -1,0 +1,18 @@
+[
+  {"id": 1, "type": "定义", "q": "什么是滑坡？", "expect": "landslide_knowledge_index"},
+  {"id": 2, "type": "定义", "q": "滑坡防治工程勘查包括哪些内容？", "expect": "32864-2016"},
+  {"id": 3, "type": "定义", "q": "什么是InSAR技术？", "expect": "滑坡隐患InSAR广域识别"},
+  {"id": 4, "type": "定义", "q": "什么是滑坡灾害链？", "expect": "河谷滑坡灾害链"},
+  {"id": 5, "type": "列举", "q": "滑坡预警的判据有哪些？", "expect": "西部高山峡谷区"},
+  {"id": 6, "type": "列举", "q": "滑坡变形监测的手段有哪些？", "expect": "滑坡变形监测研究综述"},
+  {"id": 7, "type": "列举", "q": "滑坡隐患识别的方法有哪些？", "expect": "滑坡隐患InSAR广域识别"},
+  {"id": 8, "type": "列举", "q": "西部高山峡谷区滑坡有哪些类型？", "expect": "西部高山峡谷区"},
+  {"id": 9, "type": "对比", "q": "推移式滑坡和牵引式滑坡有什么区别？", "expect": "西部高山峡谷区"},
+  {"id": 10, "type": "对比", "q": "GNSS和测缝法监测各有什么特点？", "expect": "滑坡变形监测研究综述"},
+  {"id": 11, "type": "对比", "q": "InSAR和光学遥感识别滑坡隐患各有什么优劣？", "expect": "remotesensing-17"},
+  {"id": 12, "type": "对比", "q": "滑坡和崩塌有什么区别？", "expect": "河谷滑坡灾害链"},
+  {"id": 13, "type": "诱因", "q": "降雨为什么容易诱发滑坡？", "expect": "landslide_triggers"},
+  {"id": 14, "type": "诱因", "q": "滑坡的常见诱发因素有哪些？", "expect": "landslide_triggers"},
+  {"id": 15, "type": "诱因", "q": "地震是怎么诱发滑坡的？", "expect": "landslide_triggers"},
+  {"id": 16, "type": "诱因", "q": "人类工程活动会诱发滑坡吗？", "expect": "landslide_triggers"}
+]
