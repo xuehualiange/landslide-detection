@@ -543,11 +543,10 @@ def hybrid_retrieve(
     ranked.sort(key=lambda x: x[0])
 
     if enumeration_mode:
-        filtered = [item[1] for item in ranked if item[2] > SIMILARITY_THRESHOLD]
+        filtered = [item[1] for item in ranked[:k]]
         logger.info(
-            "enumeration_mode kept %d docs with similarity > %.2f",
+            "enumeration_mode kept %d docs (no similarity threshold)",
             len(filtered),
-            SIMILARITY_THRESHOLD,
         )
         return filtered
 

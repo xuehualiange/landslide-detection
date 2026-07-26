@@ -1,6 +1,6 @@
 ﻿# RAG Service
 
-滑坡知识库问答（Chroma + HuggingFace Embeddings + DeepSeek）。
+滑坡知识库问答（FAISS + HuggingFace Embeddings + DeepSeek）。
 
 ## 端口
 
@@ -14,7 +14,7 @@ $env:DEEPSEEK_API_KEY = "sk-你的密钥"
 .\start.bat
 ```
 
-首次启动会自动 `ingest.py` 构建 `chroma_db/`。
+首次启动会自动 `ingest.py` 构建 `faiss_index/`。
 
 ## 测试
 

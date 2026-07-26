@@ -5,7 +5,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, AsyncIterator
 
 from langchain.prompts import PromptTemplate
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -292,6 +292,85 @@ class RagEngine:
         answer = getattr(response, "content", None) or str(response)
 
         return {"answer": answer, "sources": self._build_sources(docs)}
+
+    async def ask_stream(self, question: str) -> AsyncIterator[str]:
+        if not self._ready or self.vectordb is None or self.llm is None:
+            raise RuntimeError(self._error or "RAG engine not ready")
+
+        question = (question or "").strip()
+        docs: list = []
+        enumeration = is_enumeration_question(question)
+
+        if is_comparison_question(question):
+            concepts = extract_comparison_concepts(question)
+            if len(concepts) >= 2:
+                logger.info("Comparison question, concepts=%s", concepts)
+                concept_docs: dict[str, list] = {}
+                for concept in concepts:
+                    concept_docs[concept] = retrieve_for_concept(
+                        self.vectordb,
+                        self.knowledge_dir,
+                        concept,
+                    )
+                context = build_comparison_context(concept_docs)
+                if is_judgment_comparison_question(question):
+                    prompt = self._judgment_comparison_prompt
+                else:
+                    prompt = self._comparison_prompt
+                prompt_text = prompt.format(context=context, question=question)
+                async for chunk in self.llm.astream(prompt_text):
+                    yield getattr(chunk, "content", "") or ""
+                return
+
+        if is_trigger_factor_question(question):
+            logger.info("Trigger-factor question")
+            cache_docs = extract_triggers_cache_fallback(self.knowledge_dir)
+            if not cache_docs:
+                cache_docs = extract_enumeration_fallback(self.knowledge_dir, question)
+            vector_docs = hybrid_retrieve(
+                self.vectordb,
+                question,
+                k=ENUMERATION_K,
+                definition_mode=False,
+                enumeration_mode=True,
+            )
+            docs = self._merge_docs(cache_docs, vector_docs)
+            logger.info("Merged cache=%d vector=%d total=%d", len(cache_docs), len(vector_docs), len(docs))
+        elif enumeration:
+            logger.info("Enumeration question")
+            docs = hybrid_retrieve(
+                self.vectordb,
+                question,
+                k=ENUMERATION_K,
+                definition_mode=False,
+                enumeration_mode=True,
+            )
+        elif is_definition_question(question):
+            term = extract_query_term(question)
+            logger.info("Definition question, term=%s", term)
+            docs = extract_definition_fallback(self.knowledge_dir, term)
+            if docs:
+                logger.info("Using definition fallback (%d docs)", len(docs))
+            else:
+                docs = hybrid_retrieve(
+                    self.vectordb,
+                    question,
+                    k=DEFAULT_K,
+                    definition_mode=True,
+                )
+        else:
+            docs = hybrid_retrieve(
+                self.vectordb,
+                question,
+                k=DEFAULT_K,
+                definition_mode=False,
+            )
+
+        max_chars = 18000 if enumeration or is_trigger_factor_question(question) else 12000
+        context = build_context(docs, max_chars=max_chars)
+        prompt_text = self._prompt.format(context=context, question=question)
+        async for chunk in self.llm.astream(prompt_text):
+            yield getattr(chunk, "content", "") or ""
 
 
 engine = RagEngine()

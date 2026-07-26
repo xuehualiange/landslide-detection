@@ -1,6 +1,7 @@
 ﻿"""FastAPI RAG service: POST /ask"""
 from __future__ import annotations
 
+import json
 import os
 
 os.environ.setdefault("PYTHONUTF8", "1")
@@ -8,6 +9,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from rag_engine import engine
@@ -64,6 +66,19 @@ def ask(body: AskRequest):
     return AskResponse(**data)
   except Exception as exc:  # noqa: BLE001
     raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.post("/qa/stream")
+async def qa_stream(body: AskRequest):
+  if not engine.ready:
+    raise HTTPException(status_code=503, detail=engine.error or "RAG engine not ready")
+
+  async def event_generator():
+    async for text in engine.ask_stream(body.question.strip()):
+      yield f"data: {json.dumps({'content': text}, ensure_ascii=False)}\n\n"
+    yield "data: [DONE]\n\n"
+
+  return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 if __name__ == "__main__":

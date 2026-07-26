@@ -8,7 +8,7 @@
     </template>
     <el-alert type="info" :closable="false" show-icon style="margin-bottom: 12px">
       <template #title>
-        <span>基于滑坡知识库检索增强问答：回答会附带引用来源，仅依据知识库内容作答。</span>
+        <span>基于滑坡知识库检索增强问答，流式生成回答（引用来源暂不可用）。</span>
       </template>
       <div class="hint-links">
         <router-link to="/ai-chat">滑坡智能助手</router-link>
@@ -26,19 +26,8 @@
       <div v-if="!messages.length" class="empty">在下方输入问题，开始知识库问答</div>
       <div v-for="(m, i) in messages" :key="i" :class="['msg', m.role]">
         <div class="who">{{ m.role === "user" ? "我" : "知识库助手" }}</div>
-        <div class="bubble">{{ m.text }}</div>
-        <div v-if="m.sources && m.sources.length" class="sources">
-          <div class="src-title">引用来源（{{ m.sources.length }}）</div>
-          <el-collapse accordion>
-            <el-collapse-item
-              v-for="(s, j) in m.sources"
-              :key="j"
-              :title="sourceLabel(s.source)"
-              :name="String(j)"
-            >
-              <div class="snippet">{{ s.snippet || "（无摘要）" }}</div>
-            </el-collapse-item>
-          </el-collapse>
+        <div class="bubble">
+          {{ m.text }}<span v-if="m.streaming" class="stream-cursor">|</span>
         </div>
       </div>
     </div>
@@ -56,10 +45,12 @@
 </template>
 
 <script setup>
-// 知识库 RAG 问答：调用后端 /api/rag/ask，由 Java 转发 Python rag-service
+// 知识库 RAG 问答：直连 rag-service POST /qa/stream（SSE 流式）
 import { nextTick, ref } from "vue";
 import { ElMessage } from "element-plus";
-import request from "../utils/request";
+
+const RAG_STREAM_URL =
+  import.meta.env.VITE_RAG_STREAM_URL || "http://localhost:8000/qa/stream";
 
 const messages = ref([]);
 const draft = ref("");
@@ -70,17 +61,50 @@ const fillDraft = (text) => {
   draft.value = text;
 };
 
-const sourceLabel = (path) => {
-  if (!path) return "未知来源";
-  const normalized = String(path).replace(/\\/g, "/");
-  const name = normalized.split("/").pop();
-  return name || path;
-};
-
 const scrollBottom = async () => {
   await nextTick();
   const el = scrollRef.value;
   if (el) el.scrollTop = el.scrollHeight;
+};
+
+/** 解析 SSE 行：data: {...} 或 data: [DONE] */
+const parseSseLine = (line, onContent) => {
+  if (!line.startsWith("data: ")) return "skip";
+  const payload = line.slice(6).trim();
+  if (payload === "[DONE]") return "done";
+  try {
+    const parsed = JSON.parse(payload);
+    const piece = parsed.content;
+    if (piece) onContent(String(piece));
+  } catch {
+    /* 忽略非 JSON 行 */
+  }
+  return "continue";
+};
+
+/** fetch 流式读取 + TextDecoder 按行解析 SSE */
+const consumeSseStream = async (response, onContent) => {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+    for (const line of lines) {
+      const status = parseSseLine(line.trim(), onContent);
+      if (status === "done") return;
+    }
+  }
+
+  const tail = buffer.trim();
+  if (tail) {
+    const status = parseSseLine(tail, onContent);
+    if (status === "done") return;
+  }
 };
 
 const send = async () => {
@@ -89,45 +113,47 @@ const send = async () => {
   loading.value = true;
   messages.value.push({ role: "user", text });
   draft.value = "";
+
+  const assistantIdx = messages.value.length;
+  messages.value.push({ role: "assistant", text: "", streaming: true });
   await scrollBottom();
+
   try {
-    const { data } = await request.post(
-      "/rag/ask",
-      { question: text },
-      { timeout: 120000 }
-    );
-    if (data.code !== 200) {
-      ElMessage.error(data.message || "发送失败");
-      messages.value.push({
-        role: "assistant",
-        text: data.message || "（未返回）",
-        sources: []
-      });
-      await scrollBottom();
-      return;
+    const response = await fetch(RAG_STREAM_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: text })
+    });
+
+    if (!response.ok) {
+      let detail = response.statusText;
+      try {
+        const errBody = await response.json();
+        detail = errBody.detail || detail;
+      } catch {
+        /* 非 JSON 错误体 */
+      }
+      throw new Error(detail || `HTTP ${response.status}`);
     }
-    const payload = data.data || {};
-    const answer = payload.answer != null ? String(payload.answer) : "";
-    const sources = Array.isArray(payload.sources) ? payload.sources : [];
-    messages.value.push({
-      role: "assistant",
-      text: answer || "（空回复）",
-      sources
+
+    if (!response.body) {
+      throw new Error("浏览器不支持流式响应");
+    }
+
+    await consumeSseStream(response, (chunk) => {
+      messages.value[assistantIdx].text += chunk;
+      scrollBottom();
     });
+
+    if (!messages.value[assistantIdx].text) {
+      messages.value[assistantIdx].text = "（空回复）";
+    }
   } catch (e) {
-    const d = e?.response?.data;
-    const msg =
-      (d && typeof d === "object" && d.message) ||
-      (typeof d === "string" ? d : "") ||
-      e?.message ||
-      "请求失败";
+    const msg = e?.message || "请求失败";
     ElMessage.error(msg);
-    messages.value.push({
-      role: "assistant",
-      text: "请求异常：" + msg,
-      sources: []
-    });
+    messages.value[assistantIdx].text = "请求异常：" + msg;
   } finally {
+    messages.value[assistantIdx].streaming = false;
     loading.value = false;
     await scrollBottom();
   }
@@ -180,21 +206,16 @@ const clearHistory = () => {
   white-space: pre-wrap;
   word-break: break-word;
 }
-.sources {
-  margin-top: 8px;
-  padding: 0 4px;
+.stream-cursor {
+  display: inline-block;
+  margin-left: 1px;
+  color: var(--el-color-primary);
+  animation: blink 1s step-end infinite;
 }
-.src-title {
-  font-size: 12px;
-  color: #606266;
-  margin-bottom: 6px;
-}
-.snippet {
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-size: 13px;
-  color: #606266;
-  line-height: 1.6;
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 .inp-row {
   display: flex;
